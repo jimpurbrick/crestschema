@@ -1,2 +1,2 @@
 # crestschema
-Utilities for working with CREST using JSON Schema.
+Utilities for working with EVE Online's CREST API using JSON Schema.
