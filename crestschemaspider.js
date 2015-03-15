@@ -1,4 +1,4 @@
-(function(https, crestschemaparser) {
+(function(https, stringify, crestschemaparser) {
 
 var data = "";
 
@@ -12,10 +12,11 @@ var request = https.request({hostname: 'crest.eveonline.com',
 		data += chunk;
 	    });
 	response.on('end', function() {
-		process.stdout.write(JSON.stringify(crestschemaparser.jsonSchemaFromCrestOptions(data), null, 4));
+		process.stdout.write(data);
+		process.stdout.write(stringify(crestschemaparser.jsonSchemaFromCrestOptions(data), {space: 4}));
 	    });
     });
 
 request.end();
 
-}(require('https'), require('./crestschema')));
+}(require('https'), require('json-stable-stringify'), require('./crestschema')));
