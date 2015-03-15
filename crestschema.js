@@ -29,6 +29,9 @@
     function jsonSchemaFromCrestSchema(type, crestSchema, id) {
 	var result = {};
 	result.id = id;
+	if (crestSchema.description) {
+	    result.description = crestSchema.description;
+	}
 	switch (type) {
 	case "Dict":
 	case "Ref":
