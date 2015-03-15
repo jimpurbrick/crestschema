@@ -18,4 +18,4 @@ var request = https.request({hostname: 'crest.eveonline.com',
 
 request.end();
 
-}(require('https'), require('./crestschemaparser')));
+}(require('https'), require('./crestschema')));
