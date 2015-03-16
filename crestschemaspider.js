@@ -1,31 +1,49 @@
-(function(https, fs, stringify, crestschemaparser) {
+(function(request, fs, stringify, crestschemaparser) {
+    var uris = [];
+    var representations = {};
 
-var data = "";
+    function nextUri() {
+	// HACK! Hope tail recursion makes this OK.
+	// TODO: Queuing and concurrent requests.
+	if (uris.length > 0) {
+	    getRepresentations(uris.pop());
+	}
+    }
 
-var request = https.request({hostname: 'crest.eveonline.com', 
-			     method: 'OPTIONS',
-			     headers: {
-	    'Content-Length': 0
-	}},
-    function(response) {
-	response.on('data', function(chunk) {
-		data += chunk;
-	    });
-	response.on('end', function() {
-		process.stdout.write(data);
-		var jsonSchema = crestschemaparser.jsonSchemaFromCrestOptions(data);
+    function getRepresentations(uri) {
+	console.log("Requesting " + uri);
+	request({ method: 'OPTIONS',
+		    uri: uri },
+	    function (error, response, body) {
+
+		try {
+		    var jsonSchema = crestschemaparser.jsonSchemaFromCrestOptions(body);
+		} catch(err) {
+		    console.log("Failed to process " + stringify(JSON.parse(body), {space: 4}));
+		    throw err;
+		}
 		for (name in jsonSchema) {
-		    if (jsonSchema.hasOwnProperty(name)) {
-			var fileName = name.replace('application/vnd.ccp.eve.','').replace('+', '.') + '.schema';
+		    if (jsonSchema.hasOwnProperty(name) &&
+			(!representations.hasOwnProperty(name))) {
+			console.log("Found representation " + name);
+			representations[name] = true;
+			var fileName = name.replace('application/vnd.ccp.eve.','').replace('+', '.');
 			fs.writeFile(fileName, 
 				     stringify(jsonSchema[name], {space: 4}), function (err) {
 					 if (err) throw err;
 				     });
+
+			// HACK! Search GET response for uris.
+			// TODO: Use schema to find uris?
+			var httpUri = /https?:\/\/[^\"]*/g;
+			request(uri, function (error, response, body) {
+				uris.push.apply(uris, body.match(httpUri));
+				nextUri();
+			    });
 		    }
 		}
 	    });
-    });
+    }
+    getRepresentations('https://crest.eveonline.com');
 
-request.end();
-
-}(require('https'), require('fs'), require('json-stable-stringify'), require('./crestschema')));
+}(require('request'), require('fs'), require('json-stable-stringify'), require('./crestschema')));
