@@ -63,13 +63,18 @@
 	var representations = options['representations'];
 	var representationsLength = representations.length;
 	for (var i = 0; i < representationsLength; i++) {
-	    var representationName = representations[i].acceptType.name; 
-	    var crestSchema = JSON.parse(representations[i].acceptType.jsonDumpOfStructure); 
-	    jsonSchema = jsonSchemaFromCrestSchema(crestSchema.type,
-						   crestSchema,
-						   '/');
-	    jsonSchema.$schema = "http://json-schema.org/draft-04/schema#";
-	    result[representationName] = jsonSchema;
+	    ['acceptType', 'contentType'].map( function(name) {
+		if (representations[i].hasOwnProperty(name)) {
+		    var representationName = representations[i][name].name;
+		    var crestSchema = JSON.parse(representations[i][name].jsonDumpOfStructure);
+		    jsonSchema = jsonSchemaFromCrestSchema(crestSchema.type,
+							   crestSchema,
+							   '/');
+		    jsonSchema.$schema =
+			"http://json-schema.org/draft-04/schema#";
+		    result[representationName] = jsonSchema;
+		}
+		});
 	}
 	return result;
     }
