@@ -33,13 +33,6 @@
 	    result.description = crestSchema.description;
 	}
 	switch (type) {
-	case "Dict":
-	case "Ref":
-	case "ExternalRef":
-	    result.type = "object";
-	    result.properties = propertiesFromCrestProperties(crestSchema.subContent);
-	    result.required = requiredPropertiesFromCrestProperties(crestSchema.subContent);
-	    break;
 	case "Array":
 	    result.type = "array";
 	    result.items = jsonSchemaFromCrestSchema(crestSchema.extraData,
@@ -52,6 +45,14 @@
 	    break;
 	case "Long":
 	    result.type = "integer";
+	    break;
+	case "Dict":
+	case "Ref":
+	case "ExternalRef":
+	default: // 'Collection of...', 'vnd.ccp.eve...'
+	    result.type = "object";
+	    result.properties = propertiesFromCrestProperties(crestSchema.subContent);
+	    result.required = requiredPropertiesFromCrestProperties(crestSchema.subContent);
 	    break;
 	}
 	return result;
