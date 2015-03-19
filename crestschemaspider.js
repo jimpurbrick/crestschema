@@ -56,7 +56,6 @@
                 )
             },
             function (error, response, body) {
-                var name;
                 var jsonSchema;
 
                 if (error || !response) {
@@ -72,34 +71,44 @@
                     return;
                 }
 
-                for (name in jsonSchema) {
-                    if (jsonSchema.hasOwnProperty(name)
-                            && (!foundRepresentations.hasOwnProperty(name))) {
-			foundRepresentations[name] = true;
-                        console.log("Found representation " + stringify(name));
-                        fs.writeFile(
-                            name.replace('application/vnd.ccp.eve.', '')
-                                .replace('+', '.'),
-                            stringify(jsonSchema[name], {space: 4})
-                        );
+                ['GET', 'PUT', 'POST'].map(function (verb) {
+                    var name;
+                    for (name in jsonSchema[verb]) {
+                        if (jsonSchema[verb].hasOwnProperty(name)
+                                && (!foundRepresentations
+                                    .hasOwnProperty(name))) {
+                            foundRepresentations[name] = true;
+                            console.log("Found representation " +
+                                stringify(name));
+                            fs.writeFile(
+                                name.replace(
+                                    'application/vnd.ccp.eve.',
+                                    ''
+                                )
+                                    .replace('+', '.'),
+                                stringify(jsonSchema[verb][name], {space: 4})
+                            );
+                        }
                     }
-                }
+                });
 
                 // TODO: request each representation when CREST
                 // content negotiation is fixed.
                 request(
                     {uri: uri, headers: headers},
                     function (error, response, body) {
+                        var name;
                         if (error) {
                             nextUri(headers);
                             return;
                         }
                         name = response.headers['content-type'].split(';')[0];
                         if (!requestedRepresentations.hasOwnProperty(name)
-                                && jsonSchema.hasOwnProperty(name)) {
+                                && jsonSchema.GET.hasOwnProperty(name)) {
                             requestedRepresentations[name] = true;
                             foundUris = foundUris.concat(
-                                findUris(jsonSchema[name], JSON.parse(body))
+                                findUris(jsonSchema.GET[name],
+                                    JSON.parse(body))
                             );
                         }
                         nextUri(headers);
