@@ -1,3 +1,18 @@
+/*!
+ * crestschemaspider
+ * https://github.com/jimpurbrick/crestschema
+ *
+ * Copyright 2015, Jim Purbrick (http://jimpurbrick.com)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * http://www.opensource.org/licenses/mit-license.php
+ * http://www.opensource.org/licenses/GPL-2.0
+ */
+
+/*
+ * A node application which crawls the CREST API finding all reachable
+ * representations and saving them as JSON schema.
+ */
+
 /*jslint todo: true, vars: true, forin: true, plusplus: true, bitwise: true, eqeq: true, maxerr: 50, indent: 4, node: true */
 
 (function (request, fs, stringify, extend, crestschemaparser) {

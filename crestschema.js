@@ -1,3 +1,18 @@
+/*!
+ * crestschema
+ * https://github.com/jimpurbrick/crestschema
+ *
+ * Copyright 2015, Jim Purbrick (http://jimpurbrick.com)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * http://www.opensource.org/licenses/mit-license.php
+ * http://www.opensource.org/licenses/GPL-2.0
+ */
+
+/*
+ * A JavaScript library which converts CREST OPTIONS responses in to 
+ * JSON schema. Designed to be usable by browser or node applications.
+ */
+
 (function (exports) {
 
     'use strict';
@@ -97,4 +112,4 @@
         });
         return result;
     };
-})(typeof exports === 'undefined'? this['crestschemaparser']={}:exports);
+})(typeof exports === 'undefined'? this['crestschema']={}:exports);
