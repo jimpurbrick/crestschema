@@ -1,0 +1,26 @@
+{
+  "name": "crestspider",
+  "version": "0.0.1",
+  "description": "A Node.js app which crawls the EVE Online CREST API",
+  "scripts": {
+  },
+  "dependencies": {
+    "request": "2.53.0",
+    "fs": "0.0.2",
+    "json-stable-stringify": "1.0.0",
+    "extend": "2.0.0"
+  },
+  "engines": {
+    "node": "0.12.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jimpurbrick/crestschema"
+  },
+  "keywords": [
+    "node",
+    "heroku",
+    "crest",
+    "eve"
+  ]
+}
