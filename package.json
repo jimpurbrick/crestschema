@@ -1,7 +1,7 @@
 {
-  "name": "crestspider",
+  "name": "crestschema",
   "version": "0.0.1",
-  "description": "A Node.js app which crawls the EVE Online CREST API",
+  "description": "A library for crawling the EVE Online CREST API",
   "scripts": {
   },
   "dependencies": {
