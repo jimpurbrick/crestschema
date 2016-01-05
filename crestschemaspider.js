@@ -26,20 +26,30 @@
     var requestedRepresentations = {};
 
     function findUris(schema, instance) {
+        if (instance === undefined) {
+            throw new TypeError;
+        }
         var result = [];
         var property;
         switch (schema.type) {
         case 'object':
             for (property in schema.properties) {
-                result = result.concat(
-                    findUris(schema.properties[property], instance[property])
-                );
+                try {
+                    result = result.concat(
+                        findUris(schema.properties[property], instance[property]));
+                } catch (err) {
+                    // TODO: Report error if property is required.
+                }
             }
             break;
         case 'array':
             // Assume array items are homogenous,
             // so only add uris found in first instance.
-            result = result.concat(findUris(schema.items, instance[0]));
+            try {
+                result = result.concat(findUris(schema.items, instance[0]));
+            } catch (err) {
+                // Empty arrays are legitimate.
+            }
             break;
         case 'string':
             if (uriRegex.test(instance)
@@ -121,6 +131,7 @@
                         if (!requestedRepresentations.hasOwnProperty(name)
                                 && jsonSchema.GET.hasOwnProperty(name)) {
                             requestedRepresentations[name] = true;
+                            console.log('Finding uris in ' + name);
                             foundUris = foundUris.concat(
                                 findUris(jsonSchema.GET[name],
                                     JSON.parse(body))
@@ -134,16 +145,32 @@
         );
     }
 
-    var index = 2; // Usage: node crestschemaspider.js uri "Header: value"...
-    var rootUri = process.argv[index];
-    var header;
-    var headers = {};
-    for (index = 3; index < process.argv.length; ++index) {
-        header = process.argv[index].split(':');
-        headers[header[0]] = header[1].trim();
-    }
-    getRepresentations(rootUri);
+    var index = 1; // Usage: node crestschemaspider.js authtoken refreshtoken authuri rooturi
+    var authToken = process.argv[++index];
+    var refreshToken = process.argv[++index];
+    var authUri = process.argv[++index];
+    var rootUri = process.argv[++index];
 
+    request(
+        {
+            method: 'POST',
+            uri: authUri,
+            headers: {
+                'Authorization': 'Basic ' + authToken
+            },
+            form: {
+                'grant_type': 'refresh_token',
+                'refresh_token': refreshToken
+            }
+        },
+        function(error, response, body) {
+            if (error || !response) {
+                process.exit(1);
+            }
+            var headers = {'Authorization': 'Bearer ' + JSON.parse(body).access_token};
+            getRepresentations(rootUri, headers);
+        }
+    );
 }(
     require('request'),
     require('fs'),
