@@ -68,6 +68,12 @@
         case "Long":
             result.type = "integer";
             break;
+        case "Float":
+            result.type = "number";
+            break;
+        case "Bool":
+            result.type = "boolean";
+            break;
         case "Dict":
         case "Ref":
         case "ExternalRef":
