@@ -1,16 +1,31 @@
 # crestschema
 Utilities for working with EVE Online's CREST API using JSON Schema.
 
-To generate JSON schema from the CREST production API from the command line:
+To generate JSON schema from the CREST production API from the command line,
+first clone the repo then use this command:
 
-    npm install request fs json-stable-stringify extend
-    node crestschemaspider.js https://crest.eveonline.com [header:value]...
+```
+    npm install
+```
+You will need to make a .env file in the root directory with this information
+from EVE's SSO authentication process:
 
-Additional command line arguments are added to each request as headers.
+```
+AUTH_TOKEN=...
+REFRESH_TOKEN=...
+```
 
-To use the crestschema library in a browser:
+An example of this is provided with this repo in env.sample.
 
-    <script src="crestschema.js"></script>
-    <script>
-        crestschema.jsonSchemaFromCrestOptions(someOptionsBodyFromCrest);
-    </script>
+
+If you are unsure of how to implement EVE's OAUTH flow to get the access tokens
+I would recommend using postman to get the tokens initially.
+
+
+After config is done, you only need to enter either of these commands into your
+CLI from the root folder:
+
+```
+node crestschemaspider.js
+npm start
+```

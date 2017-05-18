@@ -1,4 +1,6 @@
 /*!
+
+  node crestschemaspider.js zMD1JZkvZPOggDgapyTjD7DO0ftu7zVZJUI0I4Bh5YQnN09vkWBQgfWVW2kSgSGsbfNKEwDd_1qV3z20RMCuLg2 FNnXUZNB2GbmcswzbOYqHvSIuSwZC_JZmDxttyW8BMo4dQDaffTieBWCfsXG5dESBdQ6TqMw9iy4mWqk6PAY8ECCIVAPT1mpFPudJiAi5zsWk7ZuXmm9EOL_RPby4GyBJZb3TX5wKARduuVuH-8xRYGM2-A9qS0CFDYEyyPPj_pDdF3KixUu7vaMZ1s9Re98jy7PjSCalgBMKoo6cl0vkLIPNJ0cZjeLRRGTZUeGzqg2qftC6fpL4oCHdM73tRVKqWQeRT5xpNXgFGkmBVNxDF5jKFWAD-L5tDAkFVBYXNmF_XDK3V0tBGdtP9rFNVE88ratPTeyvJBkAoq8qYtpQk9Tn27_aDk1RwDbIDbyxA-rivJ0gBhIAmCQ3H9iiCiS0 https://login.eveonline.com/oauth/verify https://crest-tq.eveonline.com/decode
  * crestschemaspider
  * https://github.com/jimpurbrick/crestschema
  *
@@ -14,12 +16,42 @@
  */
 
 /*jslint todo: true, vars: true, forin: true, plusplus: true, bitwise: true, eqeq: true, maxerr: 50, indent: 4, node: true */
+require('dotenv').config();
+var request = require('request');
+var fs = require('fs');
+var stringify = require('json-stable-stringify');
+var extend = require('extend');
+var crestschemaparser = require('./crestschema');
 
-(function (request, fs, stringify, extend, crestschemaparser) {
+var logFile = fs.createWriteStream('log.txt', { flags: 'w' });
+//Debugging/loggin and formatting of error messages
+require('request-debug')(request, function(type, data, r) {
+    if (type = 'response' && data.statusCode > 400) {
+      var errorMessage =
+        `\n
+         Request:  ${stringify(r.uri.href)} \n
+         Method: ${stringify(r.uri.method)} \n
+         Headers: ${stringify(r.uri.method)} \n
+         StatusCode: ${stringify(data.statusCode)} \n
+         Response: ${stringify(data.body)} \n
+         ----------------------------------------------------------------------`
+      logFile.write(errorMessage);
+      console.log(errorMessage);
+    }
+});
+
+
+var authToken = process.env.AUTH_TOKEN;
+var refreshToken = process.env.REFRESH_TOKEN;
+var authUri = 'https://login.eveonline.com/oauth/token';
+var rootUri = 'https://crest-tq.eveonline.com';
+
+
+function run(request, fs, stringify, extend, crestschemaparser) {
 
     'use strict';
 
-    var uriRegex = /^https?:\/\/\S+$/;
+    var uriRegex = /^https?:\/\/(?!\S+\.jpg|\S+\.png)\S+$/;
     var foundUris = [];
     var requestedUris = {};
     var foundRepresentations = {};
@@ -54,7 +86,7 @@
         case 'string':
             if (uriRegex.test(instance)
                     && !requestedUris.hasOwnProperty(instance)) {
-                console.log('Found uri ' + stringify(instance));
+                //console.log('Found uri ' + stringify(instance));
                 result.push(instance);
             }
             break;
@@ -69,7 +101,7 @@
     }
 
     function getRepresentations(uri, headers) {
-        console.log("Requesting " + stringify(uri));
+        //console.log("Requesting " + stringify(uri));
         requestedUris[uri] = true;
         request(
             {
@@ -84,14 +116,21 @@
                 var jsonSchema;
 
                 if (error || !response) {
+                    //console.log(`Requested URI error: \n ${error}` || `No response from ${uri}`)
                     nextUri(headers);
                     return;
                 }
 
                 try {
+                  if (response.statusCode > 400) {
+                    nextUri(headers);
+                    return;
+                  } else {
                     jsonSchema =
-                        crestschemaparser.jsonSchemaFromCrestOptions(body);
+                    crestschemaparser.jsonSchemaFromCrestOptions(body);
+                  }
                 } catch (err) {
+                    //console.log(`Response: \n ${stringify(response)} \n Body : \n ${body} \n \n Error : \n ${err} \n`)
                     nextUri(headers);
                     return;
                 }
@@ -103,10 +142,9 @@
                                 && (!foundRepresentations
                                     .hasOwnProperty(name))) {
                             foundRepresentations[name] = true;
-                            console.log("Found representation " +
-                                stringify(name));
+                            //console.log("Found representation " + stringify(name));
                             fs.writeFile(
-                                name.replace(
+                                './schema/' + name.replace(
                                     'application/vnd.ccp.eve.',
                                     ''
                                 )
@@ -131,7 +169,7 @@
                         if (!requestedRepresentations.hasOwnProperty(name)
                                 && jsonSchema.GET.hasOwnProperty(name)) {
                             requestedRepresentations[name] = true;
-                            console.log('Finding uris in ' + name);
+                            //console.log('Finding uris in ' + name);
                             foundUris = foundUris.concat(
                                 findUris(jsonSchema.GET[name],
                                     JSON.parse(body))
@@ -144,13 +182,6 @@
             }
         );
     }
-
-    var index = 1; // Usage: node crestschemaspider.js authtoken refreshtoken authuri rooturi
-    var authToken = process.argv[++index];
-    var refreshToken = process.argv[++index];
-    var authUri = process.argv[++index];
-    var rootUri = process.argv[++index];
-
     request(
         {
             method: 'POST',
@@ -165,16 +196,13 @@
         },
         function(error, response, body) {
             if (error || !response) {
+                console.log(error || `No Response from ${authUri}`)
                 process.exit(1);
             }
             var headers = {'Authorization': 'Bearer ' + JSON.parse(body).access_token};
             getRepresentations(rootUri, headers);
         }
     );
-}(
-    require('request'),
-    require('fs'),
-    require('json-stable-stringify'),
-    require('extend'),
-    require('./crestschema')
-));
+};
+
+run(request, fs, stringify, extend, crestschemaparser)

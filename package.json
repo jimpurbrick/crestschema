@@ -2,13 +2,14 @@
   "name": "crestschema",
   "version": "0.0.1",
   "description": "A library for crawling the EVE Online CREST API",
-  "scripts": {
-  },
+  "scripts": { "start" : "node crestschemaspider.js"},
   "dependencies": {
-    "request": "2.53.0",
+    "dotenv": "^4.0.0",
+    "extend": "^2.0.0",
     "fs": "0.0.2",
-    "json-stable-stringify": "1.0.0",
-    "extend": "2.0.0"
+    "json-stable-stringify": "^1.0.0",
+    "request": "^2.53.0",
+    "request-debug": "^0.2.0"
   },
   "engines": {
     "node": "0.12.4"
