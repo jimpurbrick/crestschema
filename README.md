@@ -20,3 +20,12 @@ An example of this is provided with this repo in env.sample.
 
 If you are unsure of how to implement EVE's OAUTH flow to get the access tokens
 I would recommend using postman to get the tokens initially.
+
+
+After config is done, you only need to enter either of these commands into your
+CLI from the root folder:
+
+```
+node crestschemaspider.js
+npm start
+```
